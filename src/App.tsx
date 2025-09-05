@@ -114,7 +114,6 @@ function App() {
           placeholder="輸入新的 Todo"
         />
         <button onClick={addTodo}>新增</button>
-        <button onClick={fetchTodos}>查詢</button>
       </div>
 
       <ul>
