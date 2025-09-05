@@ -7,6 +7,7 @@ interface Todo {
   title: string;
   completed: boolean;
   editing?: boolean;
+  originalTitle?: string; // 用來存原始標題，方便取消
 }
 
 function App() {
@@ -18,14 +19,12 @@ function App() {
   const fetchTodos = async () => {
     try {
       const res = await axios.get(`${API_URL}/todos`);
-
-      setTodos(res.data || []); 
+      setTodos(res.data || []);
     } catch (err) {
       console.error(err);
-      setTodos([]); // 保險起見
+      setTodos([]);
     }
   };
-
 
   useEffect(() => {
     fetchTodos();
@@ -55,22 +54,42 @@ function App() {
 
   // 編輯 Todo
   const startEditing = (id: string) => {
-    setTodos(todos.map(t => t.id === id ? { ...t, editing: true } : t));
+    setTodos(
+      todos.map((t) =>
+        t.id === id ? { ...t, editing: true, originalTitle: t.title } : t
+      )
+    );
   };
 
   const handleEditChange = (id: string, newTitle: string) => {
-    setTodos(todos.map(t => t.id === id ? { ...t, title: newTitle } : t));
+    setTodos(
+      todos.map((t) => (t.id === id ? { ...t, title: newTitle } : t))
+    );
   };
 
   const saveEdit = async (id: string) => {
-    const todo = todos.find(t => t.id === id);
+    const todo = todos.find((t) => t.id === id);
     if (!todo) return;
     try {
       await axios.put(`${API_URL}/todos/${id}`, { title: todo.title });
-      setTodos(todos.map(t => t.id === id ? { ...t, editing: false } : t));
+      setTodos(
+        todos.map((t) =>
+          t.id === id ? { ...t, editing: false, originalTitle: undefined } : t
+        )
+      );
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const cancelEdit = (id: string) => {
+    setTodos(
+      todos.map((t) =>
+        t.id === id
+          ? { ...t, editing: false, title: t.originalTitle!, originalTitle: undefined }
+          : t
+      )
+    );
   };
 
   // 切換完成狀態
@@ -102,24 +121,31 @@ function App() {
         {todos.map((todo) => (
           <li key={todo.id}>
             {todo.editing ? (
-              <input
-                type="text"
-                value={todo.title}
-                onChange={(e) => handleEditChange(todo.id, e.target.value)}
-                onBlur={() => saveEdit(todo.id)}
-              />
+              <>
+                <input
+                  type="text"
+                  value={todo.title}
+                  onChange={(e) => handleEditChange(todo.id, e.target.value)}
+                />
+                <div className="buttons">
+                  <button onClick={() => saveEdit(todo.id)}>修改</button>
+                  <button onClick={() => cancelEdit(todo.id)}>取消</button>
+                </div>
+              </>
             ) : (
-              <span
-                className={todo.completed ? "completed" : ""}
-                onClick={() => toggleTodo(todo.id, todo.completed)}
-              >
-                {todo.title}
-              </span>
+              <>
+                <span
+                  className={todo.completed ? "completed" : ""}
+                  onClick={() => toggleTodo(todo.id, todo.completed)}
+                >
+                  {todo.title}
+                </span>
+                <div className="buttons">
+                  <button onClick={() => startEditing(todo.id)}>編輯</button>
+                  <button onClick={() => deleteTodo(todo.id)}>刪除</button>
+                </div>
+              </>
             )}
-            <div className="buttons">
-              {!todo.editing && <button onClick={() => startEditing(todo.id)}>編輯</button>}
-              <button onClick={() => deleteTodo(todo.id)}>刪除</button>
-            </div>
           </li>
         ))}
       </ul>
