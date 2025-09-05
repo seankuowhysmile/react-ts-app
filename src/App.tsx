@@ -17,11 +17,15 @@ function App() {
   const fetchTodos = async () => {
     try {
       const res = await axios.get("nodejs-app.zeabur.app/todos");
-      setTodos(res.data);
+
+      // 如果後端回傳的是 { todos: [...] }
+      setTodos(res.data.todos || []); 
     } catch (err) {
       console.error(err);
+      setTodos([]); // 保險起見
     }
   };
+
 
   useEffect(() => {
     fetchTodos();
