@@ -19,8 +19,7 @@ function App() {
     try {
       const res = await axios.get(`${API_URL}/todos`);
 
-      // 如果後端回傳的是 { todos: [...] }
-      setTodos(res.data.todos || []); 
+      setTodos(res.data || []); 
     } catch (err) {
       console.error(err);
       setTodos([]); // 保險起見
