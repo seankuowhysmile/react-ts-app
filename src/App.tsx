@@ -10,13 +10,14 @@ interface Todo {
 }
 
 function App() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [todos, setTodos] = useState<Todo[]>([]);
   const [title, setTitle] = useState("");
 
   // 查詢 Todo
   const fetchTodos = async () => {
     try {
-      const res = await axios.get("nodejs-app.zeabur.app/todos");
+      const res = await axios.get(`${API_URL}/todos`);
 
       // 如果後端回傳的是 { todos: [...] }
       setTodos(res.data.todos || []); 
@@ -35,7 +36,7 @@ function App() {
   const addTodo = async () => {
     if (!title) return;
     try {
-      await axios.post("nodejs-app.zeabur.app/todos", { title });
+      await axios.post(`${API_URL}/todos`, { title });
       setTitle("");
       fetchTodos();
     } catch (err) {
@@ -46,7 +47,7 @@ function App() {
   // 刪除 Todo
   const deleteTodo = async (id: string) => {
     try {
-      await axios.delete(`nodejs-app.zeabur.app/todos/${id}`);
+      await axios.delete(`${API_URL}/todos/${id}`);
       fetchTodos();
     } catch (err) {
       console.error(err);
@@ -66,7 +67,7 @@ function App() {
     const todo = todos.find(t => t.id === id);
     if (!todo) return;
     try {
-      await axios.put(`nodejs-app.zeabur.app/todos/${id}`, { title: todo.title });
+      await axios.put(`${API_URL}/todos/${id}`, { title: todo.title });
       setTodos(todos.map(t => t.id === id ? { ...t, editing: false } : t));
     } catch (err) {
       console.error(err);
@@ -76,7 +77,7 @@ function App() {
   // 切換完成狀態
   const toggleTodo = async (id: string, completed: boolean) => {
     try {
-      await axios.put(`nodejs-app.zeabur.app/todos/${id}`, { completed: !completed });
+      await axios.put(`${API_URL}/todos/${id}`, { completed: !completed });
       fetchTodos();
     } catch (err) {
       console.error(err);
